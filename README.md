@@ -99,3 +99,8 @@ Or install the unlimeted collector script in cron
 
      echo "30 */4 * * * lxplus.cern.ch $HOME/ntprod/RazorProduction/collect.sh --unlimited" | acrontab
 
+
+One-time certificate setup
+--------------
+In the following file on afs, put your grid password $HOME/private/$USER.txt, and the stricter read access both unix and afs.
+

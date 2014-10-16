@@ -6,7 +6,7 @@ import couchdb
 
 class db:
     def __init__(self):
-        self.couch = couchdb.Server('http://cms-caltech-db:5984/')
+        self.couch = couchdb.Server('http://cms-caltech-db/db/')
         self.rdb = self.couch['tasks']
         self.cdb = self.couch['prods']
         self.odb = self.couch['outputs']

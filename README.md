@@ -3,14 +3,19 @@ RazorProducion
 
 Command line tools to manage production through crab3
 
-Directory setup
+One-time directory setup
 --------------
 Create and go to a working directory, preferebly accessible from afs:
 
      mkdir $HOME/scratch0/prod_dir/
      cd $HOME/scratch0/prod_dir/
      git clone https://github.com/RazorCMS/RazorProduction.git
-     RazorProduction
+     source RazorProduction/cert.sh
+     ln -s RazorProduction/production.py 
+
+Each-session setup
+
+     cd $HOME/scratch0/prod_dir/
      source RazorProduction/cert.sh
 
 Campaign setup

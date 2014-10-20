@@ -1,3 +1,6 @@
+## get the sso cookie
+cern-get-sso-cookie -u https://cms-caltech-db.cern.ch -o ~/private/ct-cookie.txt --krb
+
 ## setup a cannocial location for a proxy
 export X509_USER_PROXY=$HOME/cert/voms_proxy.cert
 

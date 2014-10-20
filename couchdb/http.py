@@ -26,6 +26,7 @@ except ImportError:
 try:
     from http.client import BadStatusLine, HTTPConnection, HTTPSConnection
 except ImportError:
+    print "Getting it from httplib"
     from httplib import BadStatusLine, HTTPConnection, HTTPSConnection
 
 try:
@@ -85,6 +86,7 @@ if sys.version < '2.6':
 
     class HTTPSConnection(TimeoutMixin, _HTTPSConnection):
         def __init__(self, *a, **k):
+            print "this is the https version"
             timeout = k.pop('timeout', None)
             _HTTPSConnection.__init__(self, *a, **k)
             self.timeout = timeout
@@ -267,6 +269,7 @@ class Session(object):
         self.connection_pool = ConnectionPool(timeout)
         self.retry_delays = list(retry_delays) # We don't want this changing on us.
         self.retryable_errors = set(retryable_errors)
+        self.cookie_items={}
 
     def request(self, method, url, body=None, headers=None, credentials=None,
                 num_redirects=0):
@@ -302,6 +305,22 @@ class Session(object):
         authorization = basic_auth(credentials)
         if authorization:
             headers['Authorization'] = authorization
+
+        if not self.cookie_items and 'https' in url:
+            import os
+            print "Fetching sso cookies"
+            cookies = filter(None,open('%s/private/ct-cookie.txt'%(os.getenv('HOME'))).read().split('\n'))
+            for c in cookies:
+                for key in ['_shibsession','_saml_idp']:
+                    if key in c:
+                        rekey=filter(lambda w : w.startswith(key), c.split())[0]
+                        item=c.split()[ c.split().index( rekey )+1]
+                        self.cookie_items[rekey] =item
+            import pprint
+            pprint.pprint( self.cookie_items) 
+        if self.cookie_items:
+            headers.update({"Cookie": '; '.join(map(lambda (k,v) : "%s=%s"%(k,v), self.cookie_items.items()))})
+        
 
         path_query = util.urlunsplit(('', '') + util.urlsplit(url)[2:4] + ('',))
         conn = self.connection_pool.get(url)
@@ -498,7 +517,10 @@ class ConnectionPool(object):
                 cls = HTTPSConnection
             else:
                 raise ValueError('%s is not a supported scheme' % scheme)
+            #print "We have selected a",cls,"from"#,cls.__class__
             conn = cls(host, timeout=self.timeout)
+            #import cookielib
+            #cf = cookielib.FileCookieJar('/afs/cern.ch/user/v/vlimant/private/ct-cookie.txt')
             conn.connect()
 
         return conn

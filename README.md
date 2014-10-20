@@ -24,7 +24,8 @@ To be documented
 
 Vizualisation of on-going production
 --------------
-Browse to http://cms-caltech-db.cern.ch/ from within cern network
+Browse to https://cms-caltech-db.cern.ch/ from within cern network
+Restricted acces to "razor-cms" e-group.
 
 Specifying specific tasks
 --------------

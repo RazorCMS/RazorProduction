@@ -20,7 +20,7 @@ class db:
         if locations:
             locs = locations
         newid=out.replace('/','|')
-        if not out in self.odb:
+        if not newid in self.odb:
             doc = { "datasetname" : out,
                     "filenames" : fns,
                     "locations" : locs,

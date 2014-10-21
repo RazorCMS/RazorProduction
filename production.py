@@ -605,14 +605,10 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                         ret = fileSummary( out, 'phys03', summary=False)
                         for ns in ret: 
                             outs.append( ns['logical_file_name'])
-                        if 'outsite' in r:
-                            site=r['outsite']
-                        else:
-                            site=['T2_US_Caltech']
 
                         d.register( out, 
                                     fns=outs,
-                                    locations=site,
+                                    locations=r['outsite'],
                                     owner=r['_id'])
                 else:
                     print "Getting output from crab3"

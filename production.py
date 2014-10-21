@@ -50,6 +50,27 @@ def generic_call(url,header=None, load=True, data=None):
         print "generic_call %s failed for %s"%( datareq.get_method(), url)
         print traceback.format_exc()
         return None
+def getOutput( task_name ):
+    certPrivilege()
+    data = '&'.join(["workflow=%s"%(task_name) , "limit=-1", "subresource=data" ])
+    outputs = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?'+data, header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
+    #print "answers",outputs
+    outs=[]
+    for out in outputs['result']:
+        outs.append(out['lfn'])
+    outs.sort()
+    return outs
+
+def fileSummary( dataset, dbs, summary=True):
+    certPrivilege()
+    dbs3_url='https://cmsweb.cern.ch/dbs/prod/%s/DBSReader/'%dbs
+    if summary:
+        urlds="%s/filesummaries?dataset=%s"%( dbs3_url, dataset)
+    else:
+        urlds="%s/files?dataset=%s"%( dbs3_url, dataset)
+
+    ret = generic_call(urlds)    
+    return ret
 
 def crabResubmit( task_name , jobs, user):
     if not certPrivilege(user):
@@ -421,9 +442,7 @@ if options.do == 'start':
                     dbs='phys03'
                 if '@' in dataset:
                     (dataset,dbs) = dataset.split('@')
-                dbs3_url='https://cmsweb.cern.ch/dbs/prod/%s/DBSReader/'%dbs
-                urlds="%s/filesummaries?dataset=%s"%( dbs3_url, dataset)
-                ret = generic_call(urlds)
+                ret = fileSummary( dataset,dbs )
                 for r in ret: 
                     newtask['nevents']+=r['num_event']
                 print newtask['dataset'],newtask['nevents']
@@ -576,10 +595,35 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
 
         if options.do in ['collect']:
             print "\tCollecting for",r['id'],'@',r['assignee']
+
             if r['status'] in ['done']:
                 print r['id'],'is',r['status']
-                for out in r['output']:
-                    d.register( out )
+                if len(r['output']):
+                    for out in r['output']:
+                        print "Registering an edm output:",out
+                        outs= []
+                        ret = fileSummary( out, 'phys03', summary=False)
+                        for ns in ret: 
+                            outs.append( ns['logical_file_name'])
+                        if 'outsite' in r:
+                            site=r['outsite']
+                        else:
+                            site=['T2_US_Caltech']
+
+                        d.register( out, 
+                                    fns=outs,
+                                    locations=site,
+                                    owner=r['_id'])
+                else:
+                    print "Getting output from crab3"
+                    ## get a list of files
+                    outs = getOutput( r['taskname'] )
+                    ## use the task id as datasetname
+                    d.register( r['_id'],
+                                fns=outs,
+                                locations=r['outsite'],
+                                owner=r['_id']
+                                )
                 continue
             
             if r['status'] == 'new':

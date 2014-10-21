@@ -12,16 +12,46 @@ class db:
         self.odb = self.couch['outputs']
         self.main = self.couch['main']
 
-    def register(self, out):
+    def register(self, out, fns= None, locations=None, owner=None):
+        files=[]
+        locs=[]
+        if fns:
+            files=fns
+        if locations:
+            locs = locations
+        newid=out.replace('/','|')
         if not out in self.odb:
             doc = { "datasetname" : out,
-                    "filenames" : [],
-                    "locations" : [],
+                    "filenames" : fns,
+                    "locations" : locs,
                     "status" : "new",
-                    "_id" : out
+                    "owner" : owner,
+                    "_id" : newid
                     }
             self.odb.save( doc )
+        else:
+            print out,"has already been registered in doc",newid
 
+    def getoutput(self, something):
+        if something in self.rdb:
+            if self.rdb[something]['output']:
+                something = self.rdb[something]['output'][0] ### only the first output !!!
+        if '/' in something:
+            docid = something.replace('/','|')
+        else:
+            docid = something
+
+        if not docid in self.odb:
+            print "Cannot find the information about",something,"under",docid
+            return None
+        else:
+            return self.odb[docid]
+
+    def filelist(self, something):
+        o = self.getoutput( something )
+        if o: return o['filenames']
+        else: return []
+        
     def set_main(self, label, version):
         doc = self.main['main']
         doc['label'] = label

@@ -253,7 +253,7 @@ def submit(d, r, crab_py, user):
             for l in logf.split('\n'):
                 if 'Working area' in l and 'already exists' in l:
                     wd = l.split("'")[1]
-                    print "Removing the existing task directory"%wd
+                    print "Removing the existing task directory %s "% (wd)
                     os.system('rm -rf %s'%( wd))
                     retry=True
                     continue

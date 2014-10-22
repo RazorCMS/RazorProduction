@@ -164,7 +164,7 @@ def write_crab( r, crab_py ):
         dataset=r['dataset']
         dbs=None
     crab=open(crab_py,'w')
-    nLumiPerJob = 1000 # corresponds to 10,000
+    nLumiPerJob = 10000 # corresponds to 10,000
     crab.write('''
 from WMCore.Configuration import Configuration
 config = Configuration()

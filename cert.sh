@@ -1,3 +1,6 @@
+## get scram and all
+source /afs/cern.ch/cms/cmsset_default.sh
+
 ## get the sso cookie
 cern-get-sso-cookie -u https://cms-caltech-db.cern.ch -o ~/private/ct-cookie.txt --krb
 

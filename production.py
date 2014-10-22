@@ -79,8 +79,10 @@ def crabResubmit( task_name , jobs, user):
     jobid = [('jobids',job) for job in jobs]
     data='&'.join( ["workflow=%s"%(task_name)]+['jobids=%s'%job for job in jobs])
     resub = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow', header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"}, data = data)
-    print "answers from resubmit",resub
-    if resub: return True
+    #print "answers from resubmit",resub
+    if resub:
+        print "\t resubmission sucessful"
+        return True
     else: 
         print "failed resubmission"
         print data

@@ -29,6 +29,7 @@ class db:
                     "_id" : newid
                     }
             self.odb.save( doc )
+            print out,"registered as output in",newid
         else:
             print out,"has already been registered in doc",newid
 

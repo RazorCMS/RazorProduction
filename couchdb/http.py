@@ -317,8 +317,8 @@ class Session(object):
                         rekey=filter(lambda w : w.startswith(key), c.split())[0]
                         item=c.split()[ c.split().index( rekey )+1]
                         self.cookie_items[rekey] =item
-            import pprint
-            pprint.pprint( self.cookie_items) 
+            #import pprint
+            #pprint.pprint( self.cookie_items) 
         if self.cookie_items:
             headers.update({"Cookie": '; '.join(map(lambda (k,v) : "%s=%s"%(k,v), self.cookie_items.items()))})
         

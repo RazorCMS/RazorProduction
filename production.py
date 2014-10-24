@@ -598,6 +598,10 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
         if options.do in ['collect']:
             print "\tCollecting for",r['id'],'@',r['assignee']
 
+            if r['status'] in ['registered']:
+                print r['id'],'is',r['status']
+                continue
+
             if r['status'] in ['done']:
                 print r['id'],'is',r['status']
                 if len(r['output']):
@@ -607,7 +611,6 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                         ret = fileSummary( out, 'phys03', summary=False)
                         for ns in ret: 
                             outs.append( ns['logical_file_name'])
-
                         d.register( out, 
                                     fns=outs,
                                     locations=r['outsite'],
@@ -622,6 +625,8 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                                 locations=r['outsite'],
                                 owner=r['_id']
                                 )
+                r['status'] = 'registered'
+                d.save_task( r )
                 continue
             
             if r['status'] == 'new':

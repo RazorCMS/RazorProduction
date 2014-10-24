@@ -72,12 +72,12 @@ def fileSummary( dataset, dbs, summary=True):
     ret = generic_call(urlds)    
     return ret
 
-def crabResubmit( task_name , jobs, user):
+def crabResubmit( task_name , jobs, black_sites, user):
     if not certPrivilege(user):
         print os.environ.get('USER'),"cannot resubmit a task for",user
         return False
-    jobid = [('jobids',job) for job in jobs]
-    data='&'.join( ["workflow=%s"%(task_name)]+['jobids=%s'%job for job in jobs])
+    data='&'.join( ["workflow=%s"%(task_name)]+['jobids=%s'%job for job in jobs]+['siteblacklist=%s'%bs for bs in black_sites])
+    #print data
     resub = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow', header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"}, data = data)
     #print "answers from resubmit",resub
     if resub:
@@ -92,7 +92,7 @@ def crabResubmit( task_name , jobs, user):
 def crabStatus( task_name):
     certPrivilege()
     ## can be done by anyone
-    status = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?workflow=%s'% task_name ,header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
+    status = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?workflow=%s&verbose=1'% task_name ,header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
     if not status or not 'result' in status: 
         print "Cannot find result for",task_name
         return None
@@ -127,13 +127,11 @@ def certPrivilege(user=None):
         proxy_path = new_proxy_path
 
     if os.path.isfile( proxy_path ):
-        #print "Found",proxy_path
         X509CertAuth.proxy = proxy_path
         return proxy_path
     else:
         if user == os.environ.get('USER') or x509_path:
             X509CertAuth.proxy = x509_path
-            #print "Found",proxy_path
             return proxy_path
         else:
             print "Proxy file %s not found and %s invalid"% (proxy_path,x509_path)
@@ -231,8 +229,6 @@ def submit(d, r, crab_py, user):
 
     command = c['setup']+'\n'
     command += 'export X509_USER_PROXY=%s \n' % (X509CertAuth.proxy)
-    #command += 'export X509_USER_CERT=%s \n' % (X509CertAuth.proxy)
-    #command += 'export X509_USER_KEY=%s \n' % (X509CertAuth.proxy)
     command += 'source /cvmfs/cms.cern.ch/crab3/crab.sh \n'
     command += 'crab submit -c %s \n' % ( crab_py )
     retry=True
@@ -262,19 +258,20 @@ def submit(d, r, crab_py, user):
     return True
 
 def resubmit(r, do=True):
-    failed=[]
-    print "resubmitting for",r['id']
-    ## try with proxy impersonification with crabresubmit
-    #if not privilegeB(r['assignee'],'re-submit'):         return False
-
+    failed= set()
+    failed_sites = set()
+    
     if 'jobs' in r['taskinfo']:
         for (jid,jst) in r['taskinfo']['jobs'].items():
             if jst['State'] == 'failed':
-                failed.append(jid)
-    failed =  list(set(failed))
+                failed.add(jid)
+                failed_sites.update(jst['SiteHistory'])
+    print failed,failed_sites
     if failed:
-        return crabResubmit( r['taskname'], failed , r['assignee'])
-
+        print "Resubmitting for",r['id']
+        return crabResubmit( r['taskname'], failed , failed_sites, r['assignee'])
+    else:
+        print "No failed jobs to resubmit"
     return False
 
 option_usage={

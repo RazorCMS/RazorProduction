@@ -308,8 +308,9 @@ class Session(object):
 
         if not self.cookie_items and 'https' in url:
             import os
-            print "Fetching sso cookies"
-            cookies = filter(None,open('%s/private/ct-cookie.txt'%(os.getenv('HOME'))).read().split('\n'))
+            cookie_loc = os.getenv('SSO_COOKIE', '%s/private/ct-cookie.txt'%(os.getenv('HOME')))
+            print "Fetching sso cookies from:",cookie_loc
+            cookies = filter(None,open(cookie_loc).read().split('\n'))
             for c in cookies:
                 for key in ['_shibsession','_saml_idp']:
                     if key in c:

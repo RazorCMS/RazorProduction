@@ -265,7 +265,8 @@ def resubmit(r, do=True):
         for (jid,jst) in r['taskinfo']['jobs'].items():
             if jst['State'] == 'failed':
                 failed.add(jid)
-                failed_sites.update(jst['SiteHistory'])
+                if 'SiteHistory' in jst:
+                    failed_sites.update(jst['SiteHistory'])
     print failed,failed_sites
     if failed:
         print "Resubmitting for",r['id']

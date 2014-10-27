@@ -29,13 +29,15 @@ class X509CertOpen(urllib2.AbstractHTTPHandler):
     def default_open(self, req):
         return self.do_open(X509CertAuth, req)
 
-def generic_call(url,header=None, load=True, data=None):
+def generic_call(url,header=None, load=True, data=None, delete=False):
     opener=urllib2.build_opener(X509CertOpen())
     datareq = urllib2.Request(url)
 
     if data:
         datareq.add_data( data )
-    
+    if delete:
+        datareq.get_method = lambda: 'DELETE'
+
     if header:
         for (k,v) in header.items():
             datareq.add_header(k,v)
@@ -71,6 +73,20 @@ def fileSummary( dataset, dbs, summary=True):
 
     ret = generic_call(urlds)    
     return ret
+
+def crabKill( task_name, user):
+     if not certPrivilege(user):
+         print os.environ.get('USER'),"cannot kill a task for",user
+         return False
+     data = '&'.join(["workflow=%s"%(task_name), ''])
+     killtask = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/', data=data,  header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"}, delete=True)
+     if killtask:
+         print "\t task kill successfully"
+         print killtask
+         return True
+     else:
+         print "failed to kill"
+         return False
 
 def crabResubmit( task_name , jobs, black_sites, user):
     if not certPrivilege(user):
@@ -547,6 +563,10 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
             if not privilegeB(r['assignee'],'reset'):
                 continue
             ## do the hard reset of a task regardless of what is the status in crab
+            K=raw_input("Go with killing task %s ? Y/N :"%( r['taskname']))
+            if K.lower() in ['y','yes']:
+                dead = crabKill( r['taskname'], r['assignee'])
+
             K=raw_input("Go with ressetting %s @ %s \n ? Y/N :"%(r['id'], r['assignee']))
             if K.lower() in ['y','yes']:
                 print "ressetting",r['id']

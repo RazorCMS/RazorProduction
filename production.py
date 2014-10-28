@@ -618,13 +618,13 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
 
             if r['status'] in ['registered']:
                 print r['id'],'is',r['status']
-                outs = d.filelist(r['_id'])
-                if not outs:
-                    print "\t the list of registered files is empty. need to re-fetch output"
-                else:
-                    continue
+                #outs = d.filelist(r['_id'])
+                #if not outs:
+                #    print "\t the list of registered files is empty. need to re-fetch output"
+                #else:
+                continue
 
-            if r['status'] in ['done','registered']:
+            if r['status'] in ['done']:
                 print r['id'],'is',r['status']
                 if len(r['output']):
                     for out in r['output']:
@@ -633,6 +633,9 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                         ret = fileSummary( out, 'phys03', summary=False)
                         for ns in ret: 
                             outs.append( ns['logical_file_name'])
+                        if not outs:
+                            print "Empty outputs for",r['taskname']
+                            continue
                         d.register( out, 
                                     fns=outs,
                                     locations=r['outsite'],
@@ -641,6 +644,9 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                     print "Getting output from crab3"
                     ## get a list of files
                     outs = getOutput( r['taskname'] )
+                    if not outs:
+                        print "Empty outputs for",r['taskname']
+                        continue
                     ## use the task id as datasetname
                     d.register( r['_id'],
                                 fns=outs,

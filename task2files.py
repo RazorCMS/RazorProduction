@@ -57,6 +57,7 @@ class task2files:
                 else:
                     if force:
                         self.copy_a_file_( location )
+                        r.append('%s/%s'%( self.localdir, location))
                     else:
                         print "%s is absent in %s" %( self.localdir, location)
             else:

@@ -12,7 +12,13 @@ class task2chain(TChain):
         for t in struct[1:]:
             self.friends.append( TChain("configurableAnalysis/razor"))
 
-        for f in task2files(localdir=localdir).list(task):
+        self.localdir = localdir
+        myfiles=task2files(localdir=localdir).list(task)
+        if not myfiles:
+            print "There are no localfiles for",task
+            myfiles=task2files(localdir=localdir).list(task, force=True)
+
+        for f in myfiles:
             self.AddFile( f )
             for fr in self.friends:
                 fr.AddFile( f )
@@ -25,7 +31,7 @@ class task2chain(TChain):
     def leaves(self):
         return self.leaves_
 
-    def tonp(self, leaves=[], maxN=None):
+    def tonp(self, leaves=[], maxN=None, write=False):
         self.SetBranchStatus('*',0)
         releave=[]
         for l in leaves:
@@ -59,10 +65,28 @@ class task2chain(TChain):
                     v=o
                 data[ientry][il] = v
             ientry+=1            
+        if write:
+            d=open(self.localdir+'/'+write+'.pkl','w')
+            pickle.dump( data, d)
+            d.close()
         return data
 
 if __name__ == "__main__":
     task='cat_v1_DYJetsToLL_M-50_HT-400to600_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5'
-    tree = task2chain(task)
-    data = tree.tonp(['jets_phi:0','jets_pt:0','jets_pt:4','razor_MR','razor_R2'])
-    pickle.dump( data , open(task+'.pkl','w') )
+    stats=10000
+    for task in [
+        #'cat_v1_DYJetsToLL_M-50_HT-400to600_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5',
+        #'cat_v1_QCD_Pt-15to30_Tune4C_13TeV_pythia8_castor_PU20bx25_POSTLS170_V5',
+        #'cat_v1_TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5',
+        #'cat_v1_WJetsToLNu_HT-400to600_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5',
+        'cat_v1_ZJetsToNuNu_HT-200to400_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5'
+        ]:
+        
+        tree = task2chain(task)
+        data = tree.tonp(['jets_pt:0','jets_pt:1','jets_pt:2',
+                          'razor_MR','razor_R2',
+                          'electrons_Pt:0','electrons_Pt:1',
+                          'muons_Pt:0','muons_Pt:1',
+                          ],
+                         maxN=stats, 
+                         write=task)

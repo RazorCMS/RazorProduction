@@ -618,9 +618,13 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
 
             if r['status'] in ['registered']:
                 print r['id'],'is',r['status']
-                continue
+                outs = d.filelist(r['_id'])
+                if not outs:
+                    print "\t the list of registered files is empty. need to re-fetch output"
+                else:
+                    continue
 
-            if r['status'] in ['done']:
+            if r['status'] in ['done','registered']:
                 print r['id'],'is',r['status']
                 if len(r['output']):
                     for out in r['output']:

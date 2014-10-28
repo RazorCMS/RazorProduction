@@ -20,7 +20,10 @@ class db:
         if locations:
             locs = locations
         newid=out.replace('/','|')
-        if not newid in self.odb:
+        rev=None
+        if newid in self.odb:
+            rev= self.odb[newid]['_rev']
+        if not newid in self.odb or len(self.odb[newid]['filenames'])==0:
             doc = { "datasetname" : out,
                     "filenames" : fns,
                     "locations" : locs,
@@ -28,6 +31,8 @@ class db:
                     "owner" : owner,
                     "_id" : newid
                     }
+            if rev:
+                doc['_rev'] = rev
             self.odb.save( doc )
             print out,"registered as output in",newid
         else:

@@ -178,7 +178,7 @@ def write_crab( r, crab_py ):
         dataset=r['dataset']
         dbs=None
     crab=open(crab_py,'w')
-    nLumiPerJob = 10000 # corresponds to 10,000
+    nLumiPerJob = 5000 ## usually ~100 events per lumi
     crab.write('''
 from WMCore.Configuration import Configuration
 config = Configuration()

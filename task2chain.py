@@ -46,7 +46,7 @@ class task2chain(TChain):
                 return None
             self.SetBranchStatus(l,1)
         samples=self.GetEntries()
-        if maxN:
+        if maxN and samples>maxN:
             samples=maxN
         ## initialize the data
         data = np.zeros([samples, len(leaves)])
@@ -69,24 +69,29 @@ class task2chain(TChain):
             d=open(self.localdir+'/'+write+'.pkl','w')
             pickle.dump( data, d)
             d.close()
+
+        print data[-1]
         return data
 
 if __name__ == "__main__":
     task='cat_v1_DYJetsToLL_M-50_HT-400to600_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5'
     stats=10000
     for task in [
-        #'cat_v1_DYJetsToLL_M-50_HT-400to600_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5',
-        #'cat_v1_QCD_Pt-15to30_Tune4C_13TeV_pythia8_castor_PU20bx25_POSTLS170_V5',
-        #'cat_v1_TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5',
-        #'cat_v1_WJetsToLNu_HT-400to600_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5',
+        'cat_v1_DYJetsToLL_M-50_HT-400to600_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5',
+        'cat_v1_QCD_Pt-15to30_Tune4C_13TeV_pythia8_castor_PU20bx25_POSTLS170_V5',
+        'cat_v1_TTJets_MSDecaysCKM_central_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5',
+        'cat_v1_WJetsToLNu_HT-400to600_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5',
         'cat_v1_ZJetsToNuNu_HT-200to400_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5'
         ]:
-        
+        print task
         tree = task2chain(task)
         data = tree.tonp(['jets_pt:0','jets_pt:1','jets_pt:2',
                           'razor_MR','razor_R2',
                           'electrons_Pt:0','electrons_Pt:1',
                           'muons_Pt:0','muons_Pt:1',
+                          'jets_eta:0','jets_eta:1','jets_eta:2',
+                          'jets_mass:0','jets_mass:1','jets_mass:2',
                           ],
                          maxN=stats, 
                          write=task)
+        

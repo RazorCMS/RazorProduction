@@ -21,11 +21,12 @@ from db import db
             
                       
 class task2files:
-    def __init__(self, localdir=None):
+    def __init__(self, localdir=None, eos=False):
 
         self.localdir = localdir
         self.redirector = 'cms-xrd-global.cern.ch'
         self.d = db()
+        self.eos = eos
 
     def localize_all(self, label, version, force=False):
         ts = self.d.tasks(label=label,version=version)
@@ -42,10 +43,25 @@ class task2files:
                 self.copy_a_file_( location )
 
     def copy_a_file_(self, lfn):
-        print "Copying %s over the WAN into %s" %( lfn,  self.localdir )
-        os.system('mkdir -p %s/%s'%(self.localdir, lfn.rsplit('/',1)[0]))
-        os.system('xrdcp root://%s/%s %s/%s'%( self.redirector, lfn,
-                                               self.localdir, lfn ))
+        if self.eos:
+            ## need to put it in a local dir then put it back to eos
+            temp_localdir = '/tmp/'
+            print "Copying %s over the WAN into %s" %( lfn,  temp_localdir )
+            os.system('mkdir -p %s/%s'%(temp_localdir, lfn.rsplit('/',1)[0]))
+            os.system('xrdcp root://%s/%s %s/%s'%( self.redirector, lfn,
+                                                   temp_localdir, lfn ))
+            ## create the hierarchy in eos
+            print "Copying %s into eos: %s" %( lfn,  self.localdir )
+            os.system('cmsMkdir %s/%s'%(self.localdir, lfn.rsplit('/',1)[0]))
+            os.system('cmsStage -f %s/%s %s/%s'%( temp_localdir, lfn,
+                                                  self.localdir, lfn ))
+            ## then remove the local tmporary file
+            os.system('rm -f %s/%s'%(temp_localdir, lfn ))
+        else:
+            print "Copying %s over the WAN into %s" %( lfn,  self.localdir )
+            os.system('mkdir -p %s/%s'%(self.localdir, lfn.rsplit('/',1)[0]))
+            os.system('xrdcp root://%s/%s %s/%s'%( self.redirector, lfn,
+                                                   self.localdir, lfn ))
 
     def list(self, task, force=False):
         r=[]

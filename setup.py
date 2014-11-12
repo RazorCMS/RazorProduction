@@ -89,6 +89,9 @@ for (key,(defv,comment,i_type,c_type)) in production_schema.items():
         if options.update_ and getattr(options,key)==None:
             ## update whatever is really needed
             continue
+        if options.update_ and key in ['version','label']:
+            print "not updating",key
+            continue
 
         if getattr(options,key)==None:
             if defv==None:

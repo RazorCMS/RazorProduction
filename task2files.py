@@ -62,22 +62,34 @@ class task2files:
             os.system('mkdir -p %s/%s'%(self.localdir, lfn.rsplit('/',1)[0]))
             os.system('xrdcp root://%s/%s %s/%s'%( self.redirector, lfn,
                                                    self.localdir, lfn ))
+    def check_file_(self, path ):
+        if self.eos:
+            if os.system('cmsLs %s'%(path))==0:
+                return True
+            else:
+                return False
+        else:
+            return os.path.isfile(path)
 
     def list(self, task, force=False):
         r=[]
         l = self.d.filelist( task )
         for location in l:
             if self.localdir:
-                if os.path.isfile('%s/%s'%(self.localdir, location)):
+                if self.check_file_('%s/%s'%(self.localdir, location)):
                     r.append('%s/%s'%( self.localdir, location))
                 else:
                     if force:
                         self.copy_a_file_( location )
                         r.append('%s/%s'%( self.localdir, location))
                     else:
-                        print "%s is absent in %s" %( self.localdir, location)
+                        print "%s is absent in %s" %( location ,self.localdir)
             else:
                 r.append('root://%s/%s' % (self.redirector, location ))
+
+        if self.eos:
+            r = map(lambda lfn : 'root://eoscms//eos/cms'+lfn, r)
+
         return r
 
 

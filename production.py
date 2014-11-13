@@ -143,12 +143,17 @@ def certPrivilege(user=None):
         proxy_path = new_proxy_path
 
     if os.path.isfile( proxy_path ):
+        print "give",proxy_path
         X509CertAuth.proxy = proxy_path
         return proxy_path
     else:
-        if user == os.environ.get('USER') or x509_path:
-            X509CertAuth.proxy = x509_path
-            return proxy_path
+        if user:
+            if user == os.environ.get('USER'):
+                X509CertAuth.proxy = x509_path
+                return x509_path
+        elif x509_path:
+                X509CertAuth.proxy = x509_path
+                return x509_path
         else:
             print "Proxy file %s not found and %s invalid"% (proxy_path,x509_path)
 

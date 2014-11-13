@@ -6,17 +6,20 @@ import pickle
 class task2chain(TChain):
     def __init__(self, task,
                  localdir='/data/vlimant',
-                 struct=['configurableAnalysis/razorv','configurableAnalysis/razor']):
+                 struct=['configurableAnalysis/razorv','configurableAnalysis/razor'],force=False,eos=False):
         TChain.__init__(self,struct[0])
         self.friends = []
         for t in struct[1:]:
             self.friends.append( TChain("configurableAnalysis/razor"))
 
         self.localdir = localdir
-        myfiles=task2files(localdir=localdir).list(task)
+        myfiles=task2files(localdir=localdir,eos=eos).list(task)
         if not myfiles:
             print "There are no localfiles for",task
-            myfiles=task2files(localdir=localdir).list(task, force=True)
+            if force:
+                myfiles=task2files(localdir=localdir).list(task, force=True,eos=eos)
+            else:
+                return
 
         for f in myfiles:
             self.AddFile( f )

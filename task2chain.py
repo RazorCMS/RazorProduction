@@ -17,7 +17,7 @@ class task2chain(TChain):
         if not myfiles:
             print "There are no localfiles for",task
             if force:
-                myfiles=task2files(localdir=localdir).list(task, force=True,eos=eos)
+                myfiles=task2files(localdir=localdir,eos=eos).list(task, force=True)
             else:
                 return
 

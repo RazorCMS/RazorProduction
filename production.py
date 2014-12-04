@@ -221,7 +221,7 @@ config.Site.storageSite = "%s"
     if dbs:
         crab.write("config.Data.dbsUrl = '%s'\n"%(dbs))
     if r['outpath']:
-        crab.write("config.Data.outlfn = '%s'\n"%(r['outpath']))
+        crab.write("config.Data.outLFN = '%s'\n"%(r['outpath']))
                 
     crab.close()
     print "crab config created for",r['id']

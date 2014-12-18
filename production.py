@@ -227,7 +227,7 @@ config.Site.storageSite = "%s"
             outLFN+='/'
         if not username in outLFN:
             outLFN+=username+'/'
-        crab.write("config.Data.outLFN = '%s'\n"%(outLFN)
+        crab.write("config.Data.outLFN = '%s'\n"%(outLFN))
                 
     crab.close()
     print "crab config created for",r['id']

@@ -637,7 +637,7 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
 
             if r['status'] in ['done']:
                 print r['id'],'is',r['status']
-                if len(r['output']):
+                if r['output'] and len(r['output']):
                     for out in r['output']:
                         print "Registering an edm output:",out
                         outs= []

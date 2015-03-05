@@ -92,16 +92,20 @@ class db:
         ##until we have a view
         v=0
         latest_v=None
-        for cid in self.cdb:
-            if cid.startswith('_'): continue
-            c= self.cdb[cid]
-            if c['label'] != label: continue
-            if version and c['version'] != version: continue
-            if status and c['status'] != status: continue
+        view='prods/label'
+        key =[label]
+        if status:
+            view+='-status'
+            key.append(status)
+        if version:
+            view+='-version'
+            key.append(version)
+        print "using cdb ",view,key
+        for cn in self.cdb.view(view,key=key,include_docs=True):
+            c= cn['doc']
             if c['version'] > v:
                 v=c['version']
                 latest_v = c 
-            if version: return c
         if latest_v: return latest_v
         return None
     def save_campaign(self, doc ):
@@ -184,18 +188,20 @@ class db:
         return self.get_campaign(label,version=version,status=status)
 
     def tasks(self,label,version,rstatus=None,user=None,status='started'):
-        c=self.current(label=label,status=status,version=version)
-        if not c:
-            return []
+        #c=self.current(label=label,status=status,version=version)
+        #if not c:
+        #    return []
         this=[]
-        for rn in self.rdb:
-            if rn.startswith('_'):continue
-            r = self.rdb[rn]
-            if all(map( lambda k : r[k]==c[k], ['version','label'])):
-                if user and r['assignee'] != user: continue
-                if rstatus and r['status'] != rstatus: continue
-                this.append(r)
-                
+        view='tasks/label-version'
+        key=[label,version]
+        if user:
+            view+='-user'
+            key.append(user)
+        if rstatus:
+            view+='-status'
+            key.append(rstatus)
+        print "using rdb ",view,key
+        this = [rn['doc'] for rn in self.rdb.view(view,key=key,include_docs=True)]
         this.sort(key = lambda d : d['id'])
         return this
     def __del__(self):

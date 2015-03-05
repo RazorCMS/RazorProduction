@@ -83,10 +83,9 @@ class db:
 
     def get_campaigns( self ):
         print "available productions"
-        for d in self.cdb:
-            if d.startswith('_'): continue
-            c = self.cdb[d]
-            print '\t',c['label'],c['version']
+        for dn in self.cdb.view('prods/label-version'):
+            print "\t",dn['key'][0],dn['key'][1]
+
 
     def get_campaign( self, label, version=None,status=None):
         ##until we have a view

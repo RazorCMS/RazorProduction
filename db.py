@@ -176,11 +176,8 @@ class db:
             return False
 
     def get(self,label,version):
-        for cn  in self.cdb:
-            c = self.cdb[cn]
-            if c['label'] != label: continue
-            if c['version'] != version: continue
-            return c
+        for cn in self.cdb.view('prods/label-version',key=[label,version],include_docs=True):
+            return cn['doc']
         return None
 
     def current(self,label,status='started',version=None):

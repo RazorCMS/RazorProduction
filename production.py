@@ -444,7 +444,8 @@ if options.do == 'start':
             for ds in c['dataset']:
                 ## how to name the task from the dataset
                 #this_id='_'.join([ds.split('/')[1],ds.split('/')[2].split('-')[1]])
-                this_id='_'.join(ds.split('/')[1:2])
+                this_id='_'.join(ds.split('/')[1:3])
+                print this_id
                 newtask={
                     "label" : c['label'],
                     "version" : c['version'],

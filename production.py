@@ -201,7 +201,7 @@ config.Data.ignoreLocality = True
 config.Data.inputDataset = "%s"
 config.Data.splitting = "LumiBased"
 config.Data.unitsPerJob = %d
-config.Data.publishDataName = "%s_v%d_v%d"
+config.Data.publishDataName = "%s_%s_v%d_v%d"
 
 config.section_("Site")
 config.Site.storageSite = "%s"
@@ -212,6 +212,8 @@ config.Site.storageSite = "%s"
       dataset,
       nLumiPerJob,
       r['label'],
+      ### add the proc_string
+      dataset.split('/')[2],
       r['version'],
       r['subversion'],
       r['outsite']

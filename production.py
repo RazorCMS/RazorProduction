@@ -52,10 +52,78 @@ def generic_call(url,header=None, load=True, data=None, delete=False):
         print "generic_call %s failed for %s"%( datareq.get_method(), url)
         print traceback.format_exc()
         return None
-def getOutput( task_name ):
+
+def getReport( task_name ):
     certPrivilege()
-    data = '&'.join(["workflow=%s"%(task_name) , "limit=-1", "subresource=data" ])
+    data = '&'.join(["workflow=%s"%(task_name) , "limit=-1", "subresource=report" ])
     outputs = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?'+data, header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
+
+    input_mask = outputs['result'][0]['lumiMask']
+    pprint.pprint( input_mask )
+
+    poolInOnlyRes = {}
+    for jn, val in outputs['result'][0]['runsAndLumis'].iteritems():
+        poolInOnlyRes[jn] = [f for f in val if f['type'] == 'POOLIN']
+
+
+    #mergedLumis = set()
+    #doubleLumis = set()
+
+    dLumisDict = defaultdict( set )
+    mLumisDict = defaultdict( set )
+
+    for reports in poolInOnlyRes.values():
+        for report in reports:
+            rep = eval( report['runlumi'] )
+            for run, lumis in rep.iteritems():
+                run=int(run)
+                for lumi in map(int,lumis):
+                    #if (run,lumi) in mergedLumis:
+                    #    doubleLumis.add((run,lumi))
+                    #mergedLumis.add((run,lumi))
+                    if lumi in mLumisDict:
+                        dLumisDict[run].add( lumi )
+                    mLumisDict[run].add( lumi )
+
+    def compact( lumis ):
+        #return a compact list of pairs
+        ret=[]
+        firstLumi=None
+        lastLumi=None
+        for lumi in lumis:
+            if firstLumi==None:
+                firstLumi=lumi
+                lastLumi=lumi
+            else:
+                if lastLumi==None or lumi == lastLumi+1:
+                    ## still in the range
+                    lastLumi = lumi
+                else:
+                    ret.append([firstLumi,lastLumi])
+                    lastLumi=None
+                    firstLumi=lumi
+                    
+        if firstLumi:
+            if lastLumi:
+                ret.append([firstLumi,lastLumi])
+            else:
+                ret.append([firstLumi,firstLumi])
+        return ret
+
+    #pprint.pprint( len(mergedLumis) )
+    #pprint.pprint( doubleLumis )
+
+
+    for r,lumis in mLumisDict.iteritems():
+        mLumisDict[r] = compact( lumis )
+
+    for r,lumis in dLumisDict.iteritems():
+        dLumisDict[r] = compact( lumis )
+
+    return dict( mLumisDict ),dict( dLumisDict )
+
+def getOutput( task_name ):
+
     #print "answers",outputs
     outs=[]
     for out in outputs['result']:
@@ -656,6 +724,12 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                                     locations=r['outsite'],
                                     owner=r['_id'])
                 else:
+                    print "Getting report from crab3"
+                    (ran,twice) = getReport( r['taskname'] )
+                    r['ranlumis'] = ran
+                    json.dumps(ran, open(r['taskdir']+'/lumiSummary.json','w'))
+                    r['duplicatelumis'] = twice
+
                     print "Getting output from crab3"
                     ## get a list of files
                     outs = getOutput( r['taskname'] )

@@ -59,7 +59,7 @@ def getReport( task_name ):
     outputs = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?'+data, header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
 
     input_mask = outputs['result'][0]['lumiMask']
-    pprint.pprint( input_mask )
+    #pprint.pprint( input_mask )
 
     poolInOnlyRes = {}
     for jn, val in outputs['result'][0]['runsAndLumis'].iteritems():

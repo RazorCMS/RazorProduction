@@ -53,6 +53,14 @@ class db:
         else:
             return self.odb[docid]
 
+    def lumimask(self, task):
+        if task in self.rdb:
+            r= self.rdb[task]
+            if 'ranlumis' in r:
+                return r['ranlumis']
+        print "not mask found for",task
+        return []
+
     def filelist(self, something):
         o = self.getoutput( something )
         if o: return o['filenames']
@@ -176,6 +184,7 @@ class db:
             return False
 
     def get(self,label,version):
+        print label,version
         for cn in self.cdb.view('prods/label-version',key=[label,version],include_docs=True):
             return cn['doc']
         return None

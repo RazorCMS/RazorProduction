@@ -1,25 +1,6 @@
 import os
 from db import db
 
-#d=db()
-#l1=d.filelist('leopard_v1_RSGluonToTT_M-4000_Tune4C_13TeV-pythia8')
-#print l1
-#l2=d.filelist('tiger_v1_QCD_Pt-470to600_Tune4C_13TeV_pythia8')
-#print l2
-#ts = d.tasks(label='cat',version=1)
-#for t in ts:
-#    l3=d.filelist(t['_id'])
-#    if l3:
-#        ## replicate it over here
-#        redirector = 'cms-xrd-global.cern.ch'
-#        localdir = '/data/vlimant'
-#        for location in l3:
-#            print "Copying %s over the WAN into %s" %( location, localdir )
-#            os.system('mkdir -p %s/%s'%(localdir, location.rsplit('/',1)[0]))
-#            os.system('xrdcp root://%s/%s %s/%s'%( redirector, location,
-#                                                   localdir, location ))
-            
-                      
 class task2files:
     def __init__(self, localdir=None, eos=False):
 
@@ -33,6 +14,7 @@ class task2files:
         for t in ts: 
             if t['status'] in ['registered','done']:
                 self.localize(t['_id'], force)        
+
     def localize(self, task, force=False):
         if not self.localdir: return
         l = self.d.filelist( task )
@@ -94,8 +76,10 @@ class task2files:
 
 
 if __name__ == "__main__":
-    t2f = task2files(localdir='/data/vlimant/')
-    #t2f.localize_all(label='cat', version=1)
-    t2f.localize('cat_v1_DYJetsToLL_M-50_HT-400to600_Tune4C_13TeV-madgraph-tauola_PU20bx25_POSTLS170_V5')
+    import sys
+    ld = sys.argv[1]
+    t2f = task2files(localdir=ld)
+    tn = sys.argv[2]
+    t2f.localize(tn)
 
-
+    

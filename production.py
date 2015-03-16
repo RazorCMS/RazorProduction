@@ -124,6 +124,9 @@ def getReport( task_name ):
 
 def getOutput( task_name ):
 
+    certPrivilege()
+    data = '&'.join(["workflow=%s"%(task_name) , "limit=-1", "subresource=data" ])
+    outputs = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?'+data, header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
     #print "answers",outputs
     outs=[]
     for out in outputs['result']:

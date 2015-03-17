@@ -708,12 +708,12 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                 #if not outs:
                 #    print "\t the list of registered files is empty. need to re-fetch output"
                 #else:
-                if not 'ranlumis' in r:
-                    print "Getting report from crab3 since the information is not there yet"
-                    (ran,twice) = getReport( r['taskname'] )
-                    r['ranlumis'] = ran
-                    r['duplicatelumis'] = twice
-                    d.save_task(r)
+                #if not 'ranlumis' in r:
+                #    print "Getting report from crab3 since the information is not there yet"
+                #    (ran,twice) = getReport( r['taskname'] )
+                #    r['ranlumis'] = ran
+                #    r['duplicatelumis'] = twice
+                #    d.save_task(r)
                 continue
 
             if r['status'] in ['done']:

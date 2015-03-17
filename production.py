@@ -787,8 +787,15 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
             r['taskinfo']=copy.deepcopy(info)
 
             if info['status'] == 'COMPLETED':
+                
                 if r['status'] == 'submitted':
                     print r['id'],'is done'
+                    print "Getting report from crab3"
+                    # get the lumi mask while progressing on the processing
+                    (ran,twice) = getReport( r['taskname'] )
+                    r['ranlumis'] = ran
+                    r['duplicatelumis'] = twice                    
+
                     r['status']='done'
                     if 'outdatasets' in info:
                         r['output']=copy.deepcopy(info['outdatasets'])
@@ -798,6 +805,11 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
 
             elif info['status'] == 'SUBMITTED':
                 r['status']='submitted'
+                print "Getting report from crab3"
+                # get the lumi mask while progressing on the processing
+                (ran,twice) = getReport( r['taskname'] )
+                r['ranlumis'] = ran
+                r['duplicatelumis'] = twice
                 ## takes care of resubmitting failed jobs only
                 resubmit(r)
                 d.save_task( r )

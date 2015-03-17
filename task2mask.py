@@ -2,6 +2,7 @@
 
 from db import db
 import sys
+import json
 
 class task2mask:
     def __init__(self):
@@ -13,6 +14,10 @@ class task2mask:
 if __name__ == "__main__":
     t2m = task2mask( )
     lm = t2m.mask( sys.argv[1] )
-    print len(lm)
-    print lm
-
+    #print len(lm)
+    if len(sys.argv)>1:
+        print "mask written in",sys.argv[2]
+        open(sys.argv[2],'w').write(json.dumps(lm))
+    else:
+        print lm
+        

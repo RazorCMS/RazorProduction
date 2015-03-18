@@ -817,7 +817,7 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
             
             elif info['status'] == 'FAILED':
                 ## try to figure out what to do. resubmit or scratch  it
-                if not info['jobSetID']:
+                if not info['jobSetID'] and options.unlimited:
                     ## the taskk was just never started : scratch
                     print "The task was never started. Resetting",r['id']
                     r['status'] = 'new'

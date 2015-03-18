@@ -209,6 +209,7 @@ class db:
         this = [rn['doc'] for rn in self.rdb.view(view,key=key,include_docs=True)]
         this.sort(key = lambda d : d['id'])
         return this
+
     def __del__(self):
 
         import random

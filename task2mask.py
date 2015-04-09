@@ -19,5 +19,5 @@ if __name__ == "__main__":
         print "mask written in",sys.argv[2]
         open(sys.argv[2],'w').write(json.dumps(lm))
     else:
-        print lm
+        print json.dumps(lm)
         

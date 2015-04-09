@@ -652,7 +652,11 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
             K=raw_input("Go with killing task %s ? Y/N :"%( r['taskname']))
             if K.lower() in ['y','yes']:
                 dead = crabKill( r['taskname'], r['assignee'])
-
+                print "Crab kill output",dead
+            if not dead:
+                print "Crab kill failed. Please retry to reset again"
+                continue
+                
             K=raw_input("Go with ressetting %s @ %s \n ? Y/N :"%(r['id'], r['assignee']))
             if K.lower() in ['y','yes']:
                 print "ressetting",r['id']

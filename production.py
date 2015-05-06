@@ -181,8 +181,12 @@ def crabStatus( task_name):
     ## can be done by anyone
     status = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?workflow=%s&verbose=1'% task_name ,header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
     if not status or not 'result' in status: 
-        print "Cannot find result for",task_name
-        return None
+        print "\tLong status not available for",task_name,"falling back to short"
+        status = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?workflow=%s'% task_name ,header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
+        if not status or not 'result' in status:
+            print "\t\tShort status not available for",task_name,"falling back to short"
+            return None
+
     status=status['result']
     if len(status)!=1:
         print "Wrong result for",task_name

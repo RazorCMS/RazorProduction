@@ -134,6 +134,36 @@ def getOutput( task_name ):
     outs.sort()
     return outs
 
+def registerOutput( r ):
+    if r['output'] and len(r['output']):
+        for out in r['output']:
+            print "Registering an edm output:",out
+            outs= []
+            ret = fileSummary( out, 'phys03', summary=False)
+            for ns in ret: 
+                outs.append( ns['logical_file_name'])
+            if not outs:
+                print "Empty outputs for",r['taskname']
+                continue
+            d.register( out, 
+                        fns=outs,
+                        locations=r['outsite'],
+                        owner=r['_id'])
+    else:
+        print "Getting output from crab3"
+        ## get a list of files
+        outs = getOutput( r['taskname'] )
+        if not outs:
+            print "Empty outputs for",r['taskname']
+            continue
+        ## use the task id as datasetname
+        d.register( r['_id'],
+                    fns=outs,
+                    locations=r['outsite'],
+                    owner=r['_id']
+                    )
+
+
 def fileSummary( dataset, dbs, summary=True):
     certPrivilege()
     dbs3_url='https://cmsweb.cern.ch/dbs/prod/%s/DBSReader/'%dbs
@@ -732,39 +762,14 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
 
             if r['status'] in ['done']:
                 print r['id'],'is',r['status']
-                if r['output'] and len(r['output']):
-                    for out in r['output']:
-                        print "Registering an edm output:",out
-                        outs= []
-                        ret = fileSummary( out, 'phys03', summary=False)
-                        for ns in ret: 
-                            outs.append( ns['logical_file_name'])
-                        if not outs:
-                            print "Empty outputs for",r['taskname']
-                            continue
-                        d.register( out, 
-                                    fns=outs,
-                                    locations=r['outsite'],
-                                    owner=r['_id'])
-                else:
-                    print "Getting report from crab3"
-                    (ran,twice) = getReport( r['taskname'] )
-                    r['ranlumis'] = ran
-                    open(r['taskdir']+'/lumiSummary.json','w').write(json.dumps(ran))
-                    r['duplicatelumis'] = twice
+                print "Getting report from crab3"
+                (ran,twice) = getReport( r['taskname'] )
+                r['ranlumis'] = ran
+                open(r['taskdir']+'/lumiSummary.json','w').write(json.dumps(ran))
+                r['duplicatelumis'] = twice
 
-                    print "Getting output from crab3"
-                    ## get a list of files
-                    outs = getOutput( r['taskname'] )
-                    if not outs:
-                        print "Empty outputs for",r['taskname']
-                        continue
-                    ## use the task id as datasetname
-                    d.register( r['_id'],
-                                fns=outs,
-                                locations=r['outsite'],
-                                owner=r['_id']
-                                )
+                registerOutput( r )
+
                 r['status'] = 'registered'
                 d.save_task( r )
                 continue
@@ -824,6 +829,8 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                 (ran,twice) = getReport( r['taskname'] )
                 r['ranlumis'] = ran
                 r['duplicatelumis'] = twice
+                ## register the output as we go
+                registerOutput( r )
                 ## takes care of resubmitting failed jobs only
                 resubmit(r)
                 d.save_task( r )

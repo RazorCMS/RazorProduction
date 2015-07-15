@@ -299,7 +299,7 @@ config.General.workArea = "crab_prod"
 config.section_("JobType")
 config.JobType.pluginName = "Analysis"
 config.JobType.psetName = "prod.py"
-config.JobType.allowNonProductionCMSSW = False
+config.JobType.allowUndistributedCMSSW = False
 
 config.section_("Data")
 config.Data.ignoreLocality = True
@@ -334,7 +334,7 @@ config.Site.storageSite = "%s"
             outLFN+='/'
         if not username in outLFN:
             outLFN+=username+'/'
-        crab.write("config.Data.outLFN = '%s'\n"%(outLFN))
+        crab.write("config.Data.outLFNDirBase = '%s'\n"%(outLFN))
                 
     crab.close()
     print "crab config created for",r['id']

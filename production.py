@@ -144,7 +144,7 @@ def registerOutput( r ):
                 outs.append( ns['logical_file_name'])
             if not outs:
                 print "Empty outputs for",r['taskname']
-                continue
+                return
             d.register( out, 
                         fns=outs,
                         locations=r['outsite'],
@@ -155,7 +155,7 @@ def registerOutput( r ):
         outs = getOutput( r['taskname'] )
         if not outs:
             print "Empty outputs for",r['taskname']
-            continue
+            return
         ## use the task id as datasetname
         d.register( r['_id'],
                     fns=outs,

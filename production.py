@@ -805,7 +805,9 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
             ## make a copy into the task itself
             r['taskinfo']=copy.deepcopy(info)
             if 'outdatasets' in info:
-                r['output']=copy.deepcopy(info['outdatasets'])
+                r['output'] = copy.deepcopy(info['outdatasets'])
+            else:
+                r['output'] = None
 
             if info['status'] == 'COMPLETED':
                 

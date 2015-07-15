@@ -804,6 +804,8 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
 
             ## make a copy into the task itself
             r['taskinfo']=copy.deepcopy(info)
+            if 'outdatasets' in info:
+                r['output']=copy.deepcopy(info['outdatasets'])
 
             if info['status'] == 'COMPLETED':
                 
@@ -816,8 +818,8 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                     r['duplicatelumis'] = twice                    
 
                     r['status']='done'
-                    if 'outdatasets' in info:
-                        r['output']=copy.deepcopy(info['outdatasets'])
+
+                    registerOutput( r )
 
                     d.save_task( r )
                     continue

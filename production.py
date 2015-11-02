@@ -9,6 +9,7 @@ import pprint
 import httplib,urllib2
 import json
 import copy
+import hashlib
 
 def get_from_log( log, field):
     interest=filter(lambda l : l.startswith(field),log)
@@ -289,6 +290,7 @@ def write_crab( r, crab_py ):
         dbs=None
     crab=open(crab_py,'w')
     nLumiPerJob = 5000 ## usually ~100 events per lumi
+    hash_id = hashlib.sha224(r['id']).hexdigest()
     crab.write('''
 from WMCore.Configuration import Configuration
 config = Configuration()
@@ -312,7 +314,7 @@ config.section_("Site")
 config.Site.storageSite = "%s"
 '''%( r['label'],
       r['version'],
-      r['id'],
+      hash_id, #r['id'],
       r['subversion'],
       dataset,
       nLumiPerJob,
@@ -678,6 +680,9 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                             #if 'failed' in jobs:
                             #print "failed",','.join(jobs['failed'])
             #pprint.pprint( r )
+            outs = getOutput( r['taskname'] )
+            print len(outs),"outputs"
+            print '\n'.join(outs)
             continue
         if options.do == 'reset':
             if not privilegeB(r['assignee'],'reset'):

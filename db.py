@@ -61,23 +61,30 @@ class db:
         ## get all tasks
         task_docs = self.rdb.view('tasks/label-version', key=[label,version])
         outputs_docs = []
+        files_to_remove = []
         ## get all ouputs
         for r in task_docs:
             #search by owner
             outputs_docs.extend( self.odb.view('outputs/owner', key=[r['id']]) )
-            
+
         #print campaign_doc
         #print len( task_docs )
         #print len( outputs_docs )
 
+        #clean the output doc
         for oid in outputs_docs:
             print oid['id']
             doc = self.odb.get( oid['id'] )
+            files_to_remove = doc['filenames'] 
             self.odb.delete( doc )
+
+        # clean the task doc
         for tid in task_docs:
             print tid['id']
             doc = self.rdb.get( tid['id'] )
             self.rdb.delete( doc )
+        
+        #clean the campaign document
         self.cdb.delete( campaign_doc )
 
     def lumimask(self, task):

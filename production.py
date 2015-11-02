@@ -431,9 +431,11 @@ option_usage={
     'acquire' :
         'Allows to assign to oneself a task of someone else',
     'collect' : 
-        'Retrieve the crab status and operated resubmissions, reset if necessary of the task --args n, or the task containing --args string'
+        'Retrieve the crab status and operated resubmissions, reset if necessary of the task --args n, or the task containing --args string',
+    'clean' : 
+        'Remove all documents pertaining a given production'
     }
-do_choices=['setup','start','assign','list','install','create','submit','reset', 'acquire','collect']
+do_choices=['setup','start','assign','list','install','create','submit','reset', 'acquire','collect','clean']
 
 usage='''./production.py --do <actions> [--args <arguments>]
 '''
@@ -616,6 +618,10 @@ if options.do == 'assign':
             d.save_task( r ) 
         print r['id'],'assigned to',r['assignee']
     sys.exit(0)
+
+if options.do == 'clean':
+    ## this is dangerous indeed !!!
+    d.cleaning( options.label, options.version)
 
 
 ##install the production 

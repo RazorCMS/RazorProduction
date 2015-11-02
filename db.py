@@ -55,6 +55,31 @@ class db:
         else:
             return self.odb[docid]
 
+    def cleaning(self, label, version):
+        ## get campaign
+        campaign_doc = self.cdb["%s_v%s"%(label,version)]
+        ## get all tasks
+        task_docs = self.rdb.view('tasks/label-version', key=[label,version])
+        outputs_docs = []
+        ## get all ouputs
+        for r in task_docs:
+            #search by owner
+            outputs_docs.extend( self.odb.view('outputs/owner', key=[r['id']]) )
+            
+        #print campaign_doc
+        #print len( task_docs )
+        #print len( outputs_docs )
+
+        for oid in outputs_docs:
+            print oid['id']
+            doc = self.odb.get( oid['id'] )
+            self.odb.delete( doc )
+        for tid in task_docs:
+            print tid['id']
+            doc = self.rdb.get( tid['id'] )
+            self.rdb.delete( doc )
+        self.cdb.delete( campaign_doc )
+
     def lumimask(self, task):
         if task in self.rdb:
             r= self.rdb[task]

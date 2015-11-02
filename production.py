@@ -851,7 +851,7 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                 d.save_task( r )
                 continue
             
-            elif info['status'] == 'FAILED':
+            elif info['status'] in ['FAILED', 'RESUBMITFAILED']:
                 ## try to figure out what to do. resubmit or scratch  it
                 if not info['jobSetID'] and options.unlimited:
                     ## the taskk was just never started : scratch

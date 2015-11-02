@@ -40,8 +40,10 @@ class db:
 
     def getoutput(self, something):
         if something in self.rdb:
-            if self.rdb[something]['output']:
+            if 'output' in self.rdb[something] and self.rdb[something]['output']:
                 something = self.rdb[something]['output'][0] ### only the first output !!!
+            else: 
+                return None
         if '/' in something:
             docid = something.replace('/','|')
         else:

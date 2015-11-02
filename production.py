@@ -290,7 +290,7 @@ def write_crab( r, crab_py ):
         dbs=None
     crab=open(crab_py,'w')
     nLumiPerJob = 5000 ## usually ~100 events per lumi
-    hash_id = hashlib.sha224(r['id']).hexdigest()
+    hash_id = hashlib.md5(r['id']).hexdigest()
     crab.write('''
 from WMCore.Configuration import Configuration
 config = Configuration()

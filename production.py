@@ -873,7 +873,7 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                     d.save_task( r )
                     continue
 
-            elif info['status'] == 'RESUBMIT':
+            elif info['status'] in ['RESUBMIT','QUEUED']:
                 print r['id'],'is',info['status']
                 r['status']= 'submitted'
                 d.save_task( r )

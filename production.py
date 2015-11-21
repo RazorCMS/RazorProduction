@@ -308,7 +308,7 @@ config.Data.ignoreLocality = True
 config.Data.inputDataset = "%s"
 config.Data.splitting = "LumiBased"
 config.Data.unitsPerJob = %d
-config.Data.publishDataName = "%s_%s_v%d_v%d"
+config.Data.outputDatasetTag = "%s_%s_v%d_v%d"
 
 config.section_("Site")
 config.Site.storageSite = "%s"

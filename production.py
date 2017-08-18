@@ -51,6 +51,8 @@ def generic_call(url,header=None, load=True, data=None, delete=False):
     except:
         import traceback
         print "generic_call %s failed for %s"%( datareq.get_method(), url)
+        if data:
+            print json.dumps( data )
         print traceback.format_exc()
         return None
 

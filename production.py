@@ -292,7 +292,7 @@ def write_crab( r, crab_py ):
         dataset=r['dataset']
         dbs=None
     crab=open(crab_py,'w')
-    nLumiPerJob = 5000 ## usually ~100 events per lumi
+    nLumiPerJob = 30 ## usually ~100 events per lumi
     hash_id = hashlib.md5(r['id']).hexdigest()
     crab.write('''
 from WMCore.Configuration import Configuration
@@ -304,10 +304,11 @@ config.General.workArea = "crab_prod"
 config.section_("JobType")
 config.JobType.pluginName = "Analysis"
 config.JobType.psetName = "prod.py"
-config.JobType.allowUndistributedCMSSW = False
+config.JobType.allowUndistributedCMSSW = True
 
 config.section_("Data")
 config.Data.ignoreLocality = True
+config.Data.publication    = False
 config.Data.inputDataset = "%s"
 config.Data.splitting = "LumiBased"
 config.Data.unitsPerJob = %d

@@ -126,7 +126,7 @@ def getReport( task_name ):
     return dict( mLumisDict ),dict( dLumisDict )
 
 def getOutput( task_name ):
-
+    return []
     certPrivilege()
     data = '&'.join(["workflow=%s"%(task_name) , "limit=-1", "subresource=data" ])
     outputs = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?'+data, header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})

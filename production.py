@@ -193,6 +193,7 @@ def crabKill( task_name, user):
          return False
 
 def crabResubmit( task_name , jobs, black_sites, user):
+    black_sites = filter(lambda s : not s in ['Unknown'], black_sites)
     if not certPrivilege(user):
         print os.environ.get('USER'),"cannot resubmit a task for",user
         return False

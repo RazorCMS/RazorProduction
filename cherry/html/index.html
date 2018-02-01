@@ -1,0 +1,75 @@
+<html lang="eng" ng-app="testApp" xmlns:ng="http://angularjs.org" id="ng-app">
+<!--<html ng-app>-->
+  <head>
+    <title> Razor Tuple Production</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="refresh" content="600" /> <!-- 10 min refresh -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/main.css" rel="stylesheet">
+    
+    <script type="text/javascript" src="scripts/underscore.js"></script>
+    <script type="text/javascript" src="scripts/angular.min.js"></script>
+    <script type="text/javascript">
+      var testApp = angular.module('testApp',[]).config(function($locationProvider){
+      $locationProvider.html5Mode(true);
+      ;});
+    </script>
+    <script src="scripts/get.js"></script>
+  </head>
+  
+  <body ng-controller="mainCtrl"> 
+    
+    Status for production : {{label}} version {{version}}, {{tasks.length}} task found {{status}}<br>
+    <select class="input-large" ng-model="label_version">
+      <option ng-repeat="key in prods" value="{{key[0]}} {{key[1]}}">{{key[0]}} {{key[1]}}</option>
+    </select>
+    </div>
+    <a href="http://dashb-cms-job.cern.ch/dashboard/templates/task-analysis"> Go to the dashboard</a></br>
+    <table class="table table-bordered table-stripped">
+      <thead>
+	<th ng-repeat="column in headers" style="white-space: nowrap;"> {{column}} </th>
+      </thead>
+      <tbody>
+	<tr ng-repeat="task in tasks" style="white-space: nowrap;">
+	  <td ng-repeat="key in headers">
+	    <div ng-switch on="key">
+
+	      <div ng-switch-when="ranlumis">
+		Show mask<input type="checkbox"
+		       ng-model="show_mask">
+		<ul ng-show="show_mask">
+		  <li> {{keys(task[key]).length}} cannot be displayed</li>
+		  <!--<li ng-repeat="(run,mask) in task[key]"> {{run}}, {{mask}}</li>-->
+		</ul>
+	      </div>
+	      <div ng-switch-when="duplicatelumis">
+		Show mask<input type="checkbox"
+		       ng-model="show_dup">
+		<ul ng-show="show_dup">
+		  <li> {{keys(task[key]).length}} cannot be displayed</li>
+		  <!-- <li ng-repeat="(run,mask) in task[key]"> {{run}}, {{mask}}</li>-->
+		</ul>
+	      </div>
+	      <div ng-switch-when="taskinfo">
+		<ul>
+		  <b>Statuses</b>
+		  <li ng-repeat="(status,count) in task[key].jobsPerStatus"> {{status}} , {{count}}</li>
+		</ul>
+		More hidden info available.
+		Show jobs<input type="checkbox"
+				ng-model="show_jobs">
+		<ul ng-show="show_jobs">
+		  <li> {{keys(task[key].jobs).length}} cannot be displayed</li>
+		  <!--<li ng-repeat="(job,s) in task[key].jobs"> {{job}},{{s}}</li>-->
+		</ul>
+	      </div>
+	      <div ng-switch-default> 
+		{{task[key]}}
+		</div>
+	    </div>
+	  </td>
+	</tr>
+      </tbody>
+    </table>
+  </body>
+</html>

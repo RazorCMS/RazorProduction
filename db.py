@@ -124,9 +124,9 @@ class db:
             print rid
 
     def get_campaigns( self ):
-        print "available productions"
-        for dn in self.cdb.view('prods/label-version'):
-            print "\t",dn['key'][0],dn['key'][1]
+        print len(self.cdb.view('prods/label-version')),"available productions"
+        #for dn in self.cdb.view('prods/label-version'):
+        #    print "\t",dn['key'][0],dn['key'][1]
 
 
     def get_campaign( self, label, version=None,status=None):

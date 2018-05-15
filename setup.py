@@ -2,6 +2,7 @@
 
 import os
 import sys
+import json
 import pprint
 from optparse import OptionParser
 from db import db
@@ -40,7 +41,7 @@ for (key,(defv,comment,i_type,c_type)) in production_schema.items():
     else:
         ## the ones that do not need anything
         a_doc[key] = c_type(defv)
-
+parser.add_option('-v', help="view the information in the db",dest="view_",default=False, action="store_true")
 parser.add_option('-u',help="update the information in the db",dest="update_",default=False,action="store_true")
 parser.add_option('-c',help="read the information from a card",dest="card_",default=False,action="store_true")
 parser.add_option('-a',help="add the provided information to the existing config",dest="add_",default=False,action='store_true')
@@ -54,9 +55,13 @@ if options.add_ and options.card_:
     sys.exit(2)    
 
 d = db()
-if options.update_:
+if options.update_ or options.view_:
     a_doc = d.get_campaign( options.label, options.version )
-    
+
+if options.view_:
+    print json.dumps( a_doc, indent=2)
+    sys.exit(0)
+
 if options.card_:
 
     card=open("%s_v%d.card"%(options.label,options.version))

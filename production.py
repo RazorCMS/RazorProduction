@@ -11,7 +11,7 @@ import json
 import copy
 import hashlib
 
-import ssl                                                                                                                                                                                             
+import ssl
 ssl.match_hostname = lambda cert, hostname: hostname == cert['subjectAltName'][0][1]
 
 try:
@@ -82,83 +82,17 @@ def getReport( task_object ):
     return dict( mLumisDict ),dict( dLumisDict )
     
 
-    """
-    data = '&'.join(["workflow=%s"%(task_name) , "limit=-1", "subresource=report" ])
-    outputs = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?'+data, header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
-
-    input_mask = outputs['result'][0]['lumiMask']
-    #pprint.pprint( input_mask )
-
-    poolInOnlyRes = {}
-    for jn, val in outputs['result'][0]['runsAndLumis'].iteritems():
-        poolInOnlyRes[jn] = [f for f in val if f['type'] == 'POOLIN']
-
-
-    #mergedLumis = set()
-    #doubleLumis = set()
-
-    dLumisDict = defaultdict( set )
-    mLumisDict = defaultdict( set )
-
-    for reports in poolInOnlyRes.values():
-        for report in reports:
-            rep = eval( report['runlumi'] )
-            for run, lumis in rep.iteritems():
-                run=int(run)
-                for lumi in map(int,lumis):
-                    #if (run,lumi) in mergedLumis:
-                    #    doubleLumis.add((run,lumi))
-                    #mergedLumis.add((run,lumi))
-                    if lumi in mLumisDict:
-                        dLumisDict[run].add( lumi )
-                    mLumisDict[run].add( lumi )
-
-    def compact( lumis ):
-        #return a compact list of pairs
-        ret=[]
-        firstLumi=None
-        lastLumi=None
-        for lumi in lumis:
-            if firstLumi==None:
-                firstLumi=lumi
-                lastLumi=lumi
-            else:
-                if lastLumi==None or lumi == lastLumi+1:
-                    ## still in the range
-                    lastLumi = lumi
-                else:
-                    ret.append([firstLumi,lastLumi])
-                    lastLumi=None
-                    firstLumi=lumi
-                    
-        if firstLumi:
-            if lastLumi:
-                ret.append([firstLumi,lastLumi])
-            else:
-                ret.append([firstLumi,firstLumi])
-        return ret
-
-    #pprint.pprint( len(mergedLumis) )
-    #pprint.pprint( doubleLumis )
-
-
-    for r,lumis in mLumisDict.iteritems():
-        mLumisDict[r] = compact( lumis )
-
-    for r,lumis in dLumisDict.iteritems():
-        dLumisDict[r] = compact( lumis )
-
-    return dict( mLumisDict ),dict( dLumisDict )
-    """
-
 def getOutput( task_object ):
     certPrivilege()
     task_name = task_object['taskname']
     ## to be fixed you want the lfns of all output files
-    #res = crabCommand('data',
-    #                  proxy = os.getenv('X509_USER_PROXY')
-    #                  )
-    return []
+    res = crabCommand('getoutput',
+                      dir = task_object['taskdir'],
+                      dump = True,
+                      proxy = os.getenv('X509_USER_PROXY')
+                      )
+    #print json.dumps( res, indent=2)
+    return res.get('lfn',[])
 
 def registerOutput( r ):
     if r['output'] and len(r['output']):
@@ -188,7 +122,9 @@ def registerOutput( r ):
                     locations=r['outsite'],
                     owner=r['_id']
                     )
-
+        if not r['output']:
+            r['output']= []
+        r['output'] = sorted(set(outs+r['output']))
 
 def fileSummary( dataset, dbs, summary=True):
     certPrivilege()
@@ -401,10 +337,10 @@ def submit(d, r, crab_py, user):
         print "could not find",r['label']
         return False
 
-    test = os.system(c['setup'])
-    if test!=0:
-        print "The setup command failed %d \n %s. You probably need to install the production" %( test, c['setup'])
-        return False
+    #test = os.system(c['setup'])
+    #if test!=0:
+    #    print "The setup command failed %d \n %s. You probably need to install the production" %( test, c['setup'])
+    #    return False
 
     retry = True
     while retry:
@@ -526,7 +462,7 @@ if options.do == 'setup':
         check_schema = {'admins':[],
                         'dataset':[],
                         'installation':None,
-                        'setup' : None,
+                        #'setup' : None,
                         'label':None,
                         'version' : None,
                         'participants':[],
@@ -721,9 +657,12 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                             #if 'failed' in jobs:
                             #print "failed",','.join(jobs['failed'])
             #pprint.pprint( r )
-            outs = getOutput( r )
-            print len(outs),"outputs"
-            print '\n'.join(outs)
+            ## this is clearly too heavy for now
+            #outs = getOutput( r )
+            outs = r.get('output',[])
+            if outs:
+                print len(outs),"outputs"
+                print '\n'.join(outs)
             continue
         if options.do == 'reset':
             if not privilegeB(r['assignee'],'reset'):

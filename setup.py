@@ -13,7 +13,7 @@ production_schema={
     'admins': (None, "the coma separated list of username being able to make changes in the production" ,str,list),
     'dataset':("", "the list of datasets to be processed in the production",str,list) ,
     'installation': ( None, "the set of instructions to instal and compile the software for the production",str,str),
-    'setup' : (None,"the list of instructions to setup the production",str,str),
+    #'setup' : (None,"the list of instructions to setup the production",str,str),
     #'timing' : (None,"The average time to process an event",float,float),## NOT USED YET
     'label': (None,"the name of the production",str,str),
     'version' : (None,"the version of the production",int,int),

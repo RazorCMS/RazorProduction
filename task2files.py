@@ -3,6 +3,9 @@
 import os
 from db import db
 
+import ssl                                                                                                                                                  
+ssl.match_hostname = lambda cert, hostname: hostname == cert['subjectAltName'][0][1]
+
 class task2files:
     def __init__(self, localdir=None, eos=False):
 

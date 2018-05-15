@@ -3,6 +3,8 @@
 from db import db
 import sys
 import json
+import ssl
+ssl.match_hostname = lambda cert, hostname: hostname == cert['subjectAltName'][0][1]
 
 class task2mask:
     def __init__(self):

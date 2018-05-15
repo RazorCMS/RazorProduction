@@ -5,6 +5,8 @@ import sys
 import pprint
 from optparse import OptionParser
 from db import db
+import ssl
+ssl.match_hostname = lambda cert, hostname: hostname == cert['subjectAltName'][0][1]
 
 production_schema={
     'admins': (None, "the coma separated list of username being able to make changes in the production" ,str,list),

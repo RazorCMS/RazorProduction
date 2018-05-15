@@ -83,16 +83,30 @@ def getReport( task_object ):
     
 
 def getOutput( task_object ):
+    return []
+    ## the following is still not functional
     certPrivilege()
     task_name = task_object['taskname']
     ## to be fixed you want the lfns of all output files
-    res = crabCommand('getoutput',
-                      dir = task_object['taskdir'],
-                      dump = True,
-                      proxy = os.getenv('X509_USER_PROXY')
-                      )
+    final = []
+    lim = 100
+    start=1
+    while True:
+        res = crabCommand('getoutput',
+                          jobids = ",".join(map(str,range(start,start+lim))),
+                          dir = task_object['taskdir'],
+                          dump = True,
+                          proxy = os.getenv('X509_USER_PROXY')
+                          )
+        start+=lim
+        add = res.get('lfn',[])
+        if add:
+            final.append( add )
+        else:
+            break
+
     #print json.dumps( res, indent=2)
-    return res.get('lfn',[])
+    return final
 
 def registerOutput( r ):
     if r['output'] and len(r['output']):
@@ -635,6 +649,7 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
         print "%d/%d]"%(ri,l)+100*"-"
         if options.do == 'list':
             for (k,v) in r.items():
+                if k in ['output']: continue
                 if k.startswith('_'): continue
                 if k in []: continue
                 if type(v) != dict:

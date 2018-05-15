@@ -73,11 +73,14 @@ def getReport( task_object ):
                       dir = task_object['taskdir'], 
                       proxy = os.getenv('X509_USER_PROXY'))
 
-    print "Showing the report but reporting nothing"
-    print json.dumps(res, indent=2)
+    #print "Showing the report but reporting nothing"
+    #print json.dumps(res, indent=2)
+    print res.keys()
 
-    ## need to massage lumis from res
-    return None,None
+    mLumisDict = res.get('processedLumis',{})
+    dLumisDict = res.get('outputFilesDuplicateLumis',{})
+    return dict( mLumisDict ),dict( dLumisDict )
+    
 
     """
     data = '&'.join(["workflow=%s"%(task_name) , "limit=-1", "subresource=report" ])

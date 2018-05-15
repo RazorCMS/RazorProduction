@@ -349,6 +349,7 @@ config.Data.unitsPerJob = %d
 config.Data.outputDatasetTag = "%s_%s_v%d_v%d"
 
 config.section_("Site")
+config.Site.whitelist = ["T2_*"]
 config.Site.storageSite = "%s"
 '''%( r['label'],
       r['version'],

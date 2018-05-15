@@ -18,6 +18,7 @@ try:
     from CRABAPI.RawCommand import crabCommand
 except:
     print "source the crab3 env before"
+    sys.exit(1)
 
 #def get_from_log( log, field):
 #    interest=filter(lambda l : l.startswith(field),log)

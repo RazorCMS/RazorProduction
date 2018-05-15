@@ -18,14 +18,16 @@ Each-session setup
      cd $HOME/scratch0/prod_dir/
      source RazorProduction/cert.sh
 
+A CMSSW python environement will have to be available for the crabAPI to function, so be sure to have it sourced properly.
+
 Campaign setup
 --------------
 See at the bottom
 
 Vizualisation of on-going production
 --------------
-Browse to https://cms-caltech-db.cern.ch/ from within cern network
-Restricted acces to "razor-cms" e-group.
+Browse to https://cms-caltech-db.cern.ch/
+Restricted acces to "razor-cms" e-group (request to be added in case).
 
 Specifying specific tasks
 --------------
@@ -112,7 +114,6 @@ To create a new production setup
 
 The mandatory parameters are better provided by the ./setup.py --help, but some are listed here
    * --installation is a command line to install the production software
-   * --setup is a command line to set oneself into the production software
    * --admins is a coma separated list of username as admins
 
 The optional parameters are better liste by the ./setup.py --help, but some are listed here

@@ -11,12 +11,20 @@ import json
 import copy
 import hashlib
 
-def get_from_log( log, field):
-    interest=filter(lambda l : l.startswith(field),log)
-    if len(interest):
-        value = interest[-1].split()[-1]
-        return value
-    return None
+import ssl                                                                                                                                                                                             
+ssl.match_hostname = lambda cert, hostname: hostname == cert['subjectAltName'][0][1]
+
+try:
+    from CRABAPI.RawCommand import crabCommand
+except:
+    print "source the crab3 env before"
+
+#def get_from_log( log, field):
+#    interest=filter(lambda l : l.startswith(field),log)
+#    if len(interest):
+#        value = interest[-1].split()[-1]
+#        return value
+#    return None
 
 class X509CertAuth(httplib.HTTPSConnection):
     def __init__(self, host, *args, **kwargs):
@@ -56,8 +64,21 @@ def generic_call(url,header=None, load=True, data=None, delete=False):
         print traceback.format_exc()
         return None
 
-def getReport( task_name ):
+def getReport( task_object ):
     certPrivilege()
+
+    task_name = task_object['taskname']
+    res = crabCommand('report', 
+                      dir = task_object['taskdir'], 
+                      proxy = os.getenv('X509_USER_PROXY'))
+
+    print "Showing the report but reporting nothing"
+    print json.dumps(res, indent=2)
+
+    ## need to massage lumis from res
+    return None,None
+
+    """
     data = '&'.join(["workflow=%s"%(task_name) , "limit=-1", "subresource=report" ])
     outputs = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?'+data, header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
 
@@ -124,18 +145,16 @@ def getReport( task_name ):
         dLumisDict[r] = compact( lumis )
 
     return dict( mLumisDict ),dict( dLumisDict )
+    """
 
-def getOutput( task_name ):
-    return []
+def getOutput( task_object ):
     certPrivilege()
-    data = '&'.join(["workflow=%s"%(task_name) , "limit=-1", "subresource=data" ])
-    outputs = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?'+data, header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
-    #print "answers",outputs
-    outs=[]
-    for out in outputs['result']:
-        outs.append(out['lfn'])
-    outs.sort()
-    return outs
+    task_name = task_object['taskname']
+    ## to be fixed you want the lfns of all output files
+    #res = crabCommand('data',
+    #                  proxy = os.getenv('X509_USER_PROXY')
+    #                  )
+    return []
 
 def registerOutput( r ):
     if r['output'] and len(r['output']):
@@ -155,7 +174,7 @@ def registerOutput( r ):
     else:
         print "Getting output from crab3"
         ## get a list of files
-        outs = getOutput( r['taskname'] )
+        outs = getOutput( r )
         if not outs:
             print "Empty outputs for",r['taskname']
             return
@@ -178,55 +197,70 @@ def fileSummary( dataset, dbs, summary=True):
     ret = generic_call(urlds)    
     return ret
 
-def crabKill( task_name, user):
-     if not certPrivilege(user):
-         print os.environ.get('USER'),"cannot kill a task for",user
-         return False
-     data = '&'.join(["workflow=%s"%(task_name), ''])
-     killtask = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/', data=data,  header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"}, delete=True)
-     if killtask:
-         print "\t task kill successfully"
-         print killtask
-         return True
-     else:
-         print "failed to kill"
-         return False
+def crabKill( task_object, user):
+    task_name = task_object['taskname']
+    if not certPrivilege(user):
+        print os.environ.get('USER'),"cannot kill a task for",user
+        return False
+    
+    res = crabCommand('kill', 
+                      dir = task_object['taskdir'],
+                      proxy = os.getenv('X509_USER_PROXY')
+                      )
+    if res.get("status",None) == "SUCCESS":
+        print "\t task kill successfully"
+        return True
+    else:
+        print "failed to kill"
+        print json.dumps( res ,indent=2)
+        return False ## for now
 
-def crabResubmit( task_name , jobs, black_sites, user):
+def crabResubmit( task_object , jobs, black_sites, user):
+    task_name = task_object['taskname']
     black_sites = filter(lambda s : not s in ['Unknown'], black_sites)
     if not certPrivilege(user):
         print os.environ.get('USER'),"cannot resubmit a task for",user
         return False
-    data='&'.join( ["workflow=%s"%(task_name)]+['jobids=%s'%job for job in jobs]+['siteblacklist=%s'%bs for bs in black_sites])
-    #print data
-    resub = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow', header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"}, data = data)
-    #print "answers from resubmit",resub
-    if resub:
-        print "\t resubmission sucessful"
-        return True
-    else: 
-        print "failed resubmission"
-        print data
-        print resub
-        return False
+    
+    res = crabCommand('resubmit', 
+                      dir = task_object['taskdir'],
+                      jobids = ",".join(jobs),
+                      siteblacklist = ",".join(black_sites),
+                      proxy = os.getenv('X509_USER_PROXY')
+                      )
+    print json.dumps(res)
+    #print "\t resubmission sucessful"
+    #return True
+    print "failed resubmission"
+    return False
 
-def crabStatus( task_name):
+def crabStatus( task_object ):
     certPrivilege()
-    ## can be done by anyone
-    status = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?workflow=%s&verbose=1'% task_name ,header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
-    if not status or not 'result' in status: 
-        print "\tLong status not available for",task_name,"falling back to short"
-        status = generic_call('https://cmsweb.cern.ch/crabserver/prod/workflow/?workflow=%s'% task_name ,header={"User-agent":"CRABClient/3.3.9","Accept": "*/*"})
-        if not status or not 'result' in status:
-            print "\t\tShort status not available for",task_name,"falling back to short"
-            return None
+    task_name = task_object['taskname']
 
-    status=status['result']
-    if len(status)!=1:
-        print "Wrong result for",task_name
-        return None
-    status=status[0]
-    return status
+    try:
+        res = crabCommand('status',
+                          long=True,
+                          dir = task_object['taskdir'],
+                          proxy = os.getenv('X509_USER_PROXY'))
+        #print json.dumps( res , indent = 2 )
+        print res.keys()
+        status = res['status']
+        return res
+    except:
+        try:
+            res = crabCommand('status',
+                              long=False,
+                              dir = task_object['taskdir'],
+                              proxy = os.getenv('X509_USER_PROXY'))
+            #print json.dumps( res , indent = 2 )
+            print res.keys()
+            status = res['status']
+            return res            
+        except:
+            print "no status for",task_name
+            return None
+    
 
 def privilege(who=['vlimant'],what=''):
     if not privilegeB(who,what):
@@ -367,33 +401,23 @@ def submit(d, r, crab_py, user):
         print "The setup command failed %d \n %s. You probably need to install the production" %( test, c['setup'])
         return False
 
-    command = c['setup']+'\n'
-    command += 'export X509_USER_PROXY=%s \n' % (X509CertAuth.proxy)
-    command += 'source /cvmfs/cms.cern.ch/crab3/crab.sh \n'
-    command += 'crab submit -c %s \n' % ( crab_py )
-    retry=True
+    retry = True
     while retry:
-        logf=os.popen(command).read()
-        log=logf.split('\n')
-        ## retrieve the taskname
-        taskname=get_from_log(log,'Task name:')
-        r['taskname'] = taskname
-        if taskname:
+        res = crabCommand('submit', config = crab_py , proxy = os.getenv('X509_USER_PROXY'))
+        taskname = res.get('uniquerequestname', None)
+        reqname = res.get('requestname', None)
+        if taskname and reqname:
+            r['taskname'] = taskname
             r['status']='submitted'
-            r['taskdir'] = get_from_log(log,'Log file').rsplit('/',1)[0]
-            print r['id'],'is',r['status']
+            ## or adjust the directory
+            r['taskdir']=os.getenv('PWD')+'/crab_prod/'+reqname
             retry=False
         else:
             retry=False
-            ## task evasive actions
-            for l in logf.split('\n'):
-                if 'Working area' in l and 'already exists' in l:
-                    wd = l.split("'")[1]
-                    print "Removing the existing task directory %s "% (wd)
-                    os.system('rm -rf %s'%( wd))
-                    retry=True
-                    continue
-            print "could not submit\n",command
+            ## try to remove the directory
+            print json.dumps(res, indent=2)
+            print "could not submit with",crab_py
+
     d.save_task( r ) 
     return True
 
@@ -407,10 +431,12 @@ def resubmit(r, do=True):
                 failed.add(jid)
                 if 'SiteHistory' in jst:
                     failed_sites.update(jst['SiteHistory'])
-    print failed,failed_sites
+    #print failed,failed_sites
+    print len(failed),"failed jobs at",len(failed_sites),"sites"
+
     if failed:
         print "Resubmitting for",r['id']
-        return crabResubmit( r['taskname'], failed , failed_sites, r['assignee'])
+        return crabResubmit( r, failed , failed_sites, r['assignee'])
     else:
         print "No failed jobs to resubmit"
     return False
@@ -690,7 +716,7 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                             #if 'failed' in jobs:
                             #print "failed",','.join(jobs['failed'])
             #pprint.pprint( r )
-            outs = getOutput( r['taskname'] )
+            outs = getOutput( r )
             print len(outs),"outputs"
             print '\n'.join(outs)
             continue
@@ -702,7 +728,7 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
             if K.lower() in ['y','yes']:
                 K=raw_input("Confirm that you want to kill all for task %s ? Y/N :"%( r['taskname']))
                 if K.lower() in ['y','yes']:
-                    dead = crabKill( r['taskname'], r['assignee'])
+                    dead = crabKill( r, r['assignee'])
                     print "Crab kill output",dead
                     if not dead:
                         print "Crab kill failed. Please retry to reset again"
@@ -763,22 +789,12 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
 
             if r['status'] in ['registered']:
                 print r['id'],'is',r['status']
-                #outs = d.filelist(r['_id'])
-                #if not outs:
-                #    print "\t the list of registered files is empty. need to re-fetch output"
-                #else:
-                #if not 'ranlumis' in r:
-                #    print "Getting report from crab3 since the information is not there yet"
-                #    (ran,twice) = getReport( r['taskname'] )
-                #    r['ranlumis'] = ran
-                #    r['duplicatelumis'] = twice
-                #    d.save_task(r)
                 continue
 
             if r['status'] in ['done']:
                 print r['id'],'is',r['status']
-                print "Getting report from crab3"
-                (ran,twice) = getReport( r['taskname'] )
+                print r['status'],"Getting report from crab3"
+                (ran,twice) = getReport( r )
                 r['ranlumis'] = ran
                 open(r['taskdir']+'/lumiSummary.json','w').write(json.dumps(ran))
                 r['duplicatelumis'] = twice
@@ -808,7 +824,8 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                 continue
 
             ## get the info from crab-status
-            info=crabStatus(r['taskname'])
+            #info=crabStatus(r['taskname'])
+            info=crabStatus(r)
 
             if not info: 
                 print "could not find anything for",r['taskname']
@@ -828,9 +845,9 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
                 
                 if r['status'] == 'submitted':
                     print r['id'],'is done'
-                    print "Getting report from crab3"
                     # get the lumi mask while progressing on the processing
-                    (ran,twice) = getReport( r['taskname'] )
+                    info['status'],"Getting report from crab3"
+                    (ran,twice) = getReport( r  )
                     r['ranlumis'] = ran
                     r['duplicatelumis'] = twice                    
 
@@ -843,9 +860,10 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
 
             elif info['status'] == 'SUBMITTED':
                 r['status']='submitted'
-                print "Getting report from crab3"
+                print info['status'],"Getting report from crab3"
                 # get the lumi mask while progressing on the processing
-                (ran,twice) = getReport( r['taskname'] )
+                #(ran,twice) = getReport( r['taskname'] )
+                (ran,twice) = getReport( r )
                 r['ranlumis'] = ran
                 r['duplicatelumis'] = twice
                 ## register the output as we go
@@ -857,7 +875,7 @@ if options.do in ['list','create','submit','reset','collect','acquire']:
             
             elif info['status'] in ['FAILED', 'RESUBMITFAILED']:
                 ## try to figure out what to do. resubmit or scratch  it
-                if not info['jobSetID'] and options.unlimited:
+                if not info.get('jobSetID',None) and options.unlimited: ### needs fixing somehow
                     ## the taskk was just never started : scratch
                     print "The task was never started. Resetting",r['id']
                     r['status'] = 'new'

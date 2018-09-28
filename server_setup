@@ -1,0 +1,15 @@
+copy the file httpd.conf to /etc/httpd/conf/httpd.conf
+copy the file local.ini to /etc/couchdb/local.ini
+setup CERN shibboleth access #TODO
+
+##setup the firewall
+iptables-restore iptables.txt
+
+##bring up the services
+service httpd restart
+service shibd restart
+service couchdb restart
+
+## start cherrypy
+cd /data/cherry
+nohup python main.py

@@ -1,7 +1,9 @@
 import os
 import json
 import pprint
-import copy 
+import copy
+import ssl 
+ssl.match_hostname = lambda cert, hostname: hostname == cert['subjectAltName'][0][1]
 import couchdb
 
 class db:
